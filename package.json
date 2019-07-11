@@ -1,0 +1,13 @@
+{
+  "name": "umi-remove-locale",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/generator": "^7.5.0",
+    "@babel/parser": "^7.5.0",
+    "@babel/traverse": "^7.5.0",
+    "babel-types": "^6.26.0",
+    "prettier": "^1.18.2"
+  }
+}
