@@ -4,6 +4,9 @@ const fs = require('fs');
 const { winPath } = require('umi-utils');
 const getLocalFileList = require('./getLocalFileList');
 const removeLocale = require('./removeLocale');
+const eslintJs = require('./eslintJs');
+const prettier = require('prettier');
+const fabric = require('@umijs/fabric');
 
 const globList = (patternList, options) => {
   let fileList = [];
@@ -13,6 +16,11 @@ const globList = (patternList, options) => {
 
   return fileList;
 };
+const prettierCode = code =>
+  prettier.format(code, {
+    ...fabric.prettier,
+    parser: 'babel',
+  });
 
 const getFileContent = path => fs.readFileSync(winPath(path), 'utf-8');
 
@@ -25,10 +33,12 @@ module.exports = ({ cwd, locale, write }) => {
 
   // 获得 locale 的配置
   const localeMap = getLocalFileList(cwd, locale);
+
   tsFiles.forEach(path => {
-    const content = removeLocale(getFileContent(join(cwd, path)), localeMap);
+    let content = removeLocale(getFileContent(join(cwd, path)), localeMap);
 
     if (write) {
+      content = prettierCode(eslintJs(content));
       fs.writeFileSync(join(cwd, path), content, 'utf-8');
       return;
     }

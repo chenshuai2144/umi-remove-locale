@@ -1,20 +1,15 @@
 const parser = require('@babel/parser');
 const traverse = require('@babel/traverse');
 const generate = require('@babel/generator');
-const prettier = require('prettier');
+
 const t = require('babel-types');
-const fabric = require('@umijs/fabric');
 
 /**
  * 生成代码
  * @param {*} ast
  */
 function generateCode(ast) {
-  const newCode = generate.default(ast, {}).code;
-  return prettier.format(newCode, {
-    ...fabric.prettier,
-    parser: 'babel',
-  });
+  return generate.default(ast, {}).code;
 }
 
 const genMessage = ({ id, defaultMessage }, localeMap) => {
@@ -58,7 +53,6 @@ const genAst = (ast, localeMap) => {
         const message = genMessage(params, localeMap);
         let container = path.parentPath;
 
-        // 如果是 <></> 类型不需要加string
         // JSXExpressionContainer = {}, 如果是 JSXExpressionContainer 一起删掉
         if (container.parentPath.type === 'JSXExpressionContainer') {
           container = path.parentPath.parentPath;
