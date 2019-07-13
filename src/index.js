@@ -17,11 +17,13 @@ const globList = (patternList, options) => {
 const getFileContent = path => fs.readFileSync(winPath(path), 'utf-8');
 
 module.exports = ({ cwd, locale, write }) => {
+  // 寻找项目下的所有 ts
   const tsFiles = globList(['**/*.tsx', '**/*.ts', '**/*.js', '**/*.jsx'], {
     cwd,
     ignore: ['**/*.d.ts', '**/locales/**'],
   });
 
+  // 获得 locale 的配置
   const localeMap = getLocalFileList(cwd, locale);
   tsFiles.forEach(path => {
     const content = removeLocale(getFileContent(join(cwd, path)), localeMap);

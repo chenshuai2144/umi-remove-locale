@@ -3,6 +3,7 @@ const traverse = require('@babel/traverse');
 const generate = require('@babel/generator');
 const prettier = require('prettier');
 const t = require('babel-types');
+const fabric = require('@umijs/fabric');
 
 /**
  * 生成代码
@@ -11,10 +12,8 @@ const t = require('babel-types');
 function generateCode(ast) {
   const newCode = generate.default(ast, {}).code;
   return prettier.format(newCode, {
-    singleQuote: true,
-    trailingComma: 'es5',
-    printWidth: 100,
-    parser: 'typescript',
+    ...fabric.prettier,
+    parser: 'babel',
   });
 }
 
@@ -28,9 +27,22 @@ const genMessage = ({ id, defaultMessage }, localeMap) => {
   return id;
 };
 
+/**
+ * 替换文件中的 formatMessage
+ * @param {*} ast
+ * @param {*} localeMap
+ */
 const genAst = (ast, localeMap) => {
   traverse.default(ast, {
     enter(path) {
+      // 删除  import { formatMessage } from 'umi-plugin-react/locale';
+      if (path.isImportDeclaration()) {
+        if (path.node.source.value === 'umi-plugin-react/locale') {
+          path.remove();
+        }
+      }
+
+      // 替换 formatMessage
       if (path.isIdentifier({ name: 'formatMessage' })) {
         const { arguments: formatMessageArguments } = path.container;
         if (!formatMessageArguments) {
@@ -44,8 +56,15 @@ const genAst = (ast, localeMap) => {
         });
 
         const message = genMessage(params, localeMap);
-        const container = path.parentPath.parentPath;
+        let container = path.parentPath;
+
+        // 如果是 <></> 类型不需要加string
+        // JSXExpressionContainer = {}, 如果是 JSXExpressionContainer 一起删掉
+        if (container.parentPath.type === 'JSXExpressionContainer') {
+          container = path.parentPath.parentPath;
+        }
         if (message) {
+          // 如果是 <></> 类型不需要加string
           const isJSXElement = container.parentPath.type === 'JSXElement';
           if (!isJSXElement) {
             container.replaceWithSourceString(`"${message}"`);
@@ -54,6 +73,8 @@ const genAst = (ast, localeMap) => {
           }
         }
       }
+
+      // 替换 FormattedMessage
       if (path.isJSXIdentifier({ name: 'FormattedMessage' })) {
         const { attributes } = path.container;
         const params = {};
@@ -61,8 +82,21 @@ const genAst = (ast, localeMap) => {
           params[node.name.name] = node.value.value;
         });
         const message = genMessage(params, localeMap);
+        let container = path.parentPath.parentPath;
+
+        // 如果是 <></> 类型不需要加string
+        // JSXExpressionContainer = {}
+        if (container.parentPath.type === 'JSXExpressionContainer') {
+          container = container.parentPath;
+        }
+
+        const isJSXElement = container.parentPath.type === 'JSXElement';
         if (message) {
-          path.parentPath.replaceWith(t.identifier(message));
+          if (isJSXElement) {
+            container.replaceWith(t.identifier(message));
+          } else {
+            container.replaceWithSourceString(`"${message}"`);
+          }
         }
       }
     },
@@ -72,7 +106,7 @@ const genAst = (ast, localeMap) => {
 module.exports = (code, localeMap) => {
   const ast = parser.parse(code, {
     sourceType: 'module',
-    plugins: ['jsx', 'typescript'],
+    plugins: ['jsx', 'typescript', 'dynamicImport', 'classProperties', 'decorators-legacy'],
   });
   genAst(ast, localeMap);
   return generateCode(ast);

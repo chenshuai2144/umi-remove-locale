@@ -2,7 +2,6 @@ const groupBy = require('lodash.groupby');
 const { winPath } = require('umi-utils');
 const glob = require('glob');
 const { join, basename } = require('path');
-const importFresh = require('import-fresh');
 const nodeEval = require('node-eval');
 
 const transform = require('./transform');
@@ -45,12 +44,7 @@ module.exports = (cwd, locale) => {
     winPath(path),
   );
   const localeMap = arrayList
-    .map(filePath => {
-      if (filePath.includes('.js')) {
-        return importFresh(filePath);
-      }
-      return nodeEval(transform(filePath)).default;
-    })
+    .map(filePath => nodeEval(transform(filePath)).default)
     .reduce(
       (pre, item) => ({
         ...pre,
