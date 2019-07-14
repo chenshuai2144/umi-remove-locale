@@ -19,12 +19,11 @@ const globList = (patternList, options) => {
 const prettierCode = code =>
   prettier.format(code, {
     ...fabric.prettier,
-    parser: 'babel',
   });
 
 const getFileContent = path => fs.readFileSync(winPath(path), 'utf-8');
 
-module.exports = ({ cwd, locale, write }) => {
+module.exports = ({ cwd, locale = 'zh-CN', write }) => {
   // 寻找项目下的所有 ts
   const tsFiles = globList(['**/*.tsx', '**/*.ts', '**/*.js', '**/*.jsx'], {
     cwd,

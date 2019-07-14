@@ -4,14 +4,14 @@ module.exports = filePath => {
   const { code } = babel.transformFileSync(filePath, {
     presets: [
       [
-        '@babel/env',
+        require.resolve('@babel/preset-env'),
         {
           targets: {
             node: true,
           },
         },
       ],
-      '@babel/preset-typescript',
+      require.resolve('@babel/preset-typescript'),
     ],
   });
   return code;
