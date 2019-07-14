@@ -1,5 +1,5 @@
 {
-  "name": "umi-remove-locale",
+  "name": "umi-uni18n",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
