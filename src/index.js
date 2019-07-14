@@ -16,9 +16,10 @@ const globList = (patternList, options) => {
 
   return fileList;
 };
-const prettierCode = code =>
+const prettierCode = (code, filepath) =>
   prettier.format(code, {
     ...fabric.prettier,
+    filepath,
   });
 
 const getFileContent = path => fs.readFileSync(winPath(path), 'utf-8');
@@ -37,7 +38,7 @@ module.exports = ({ cwd, locale = 'zh-CN', write }) => {
     let content = removeLocale(getFileContent(join(cwd, path)), localeMap);
 
     if (write) {
-      content = prettierCode(eslintJs(content));
+      content = prettierCode(eslintJs(content), path);
       fs.writeFileSync(join(cwd, path), content, 'utf-8');
       return;
     }
