@@ -29,7 +29,7 @@ const genMessage = ({ id, defaultMessage }, localeMap) => {
  */
 const genAst = (ast, localeMap) => {
   traverse.default(ast, {
-    enter(path) {
+    enter(path, state) {
       // 删除  import { formatMessage } from 'umi-plugin-react/locale';
       if (path.isImportDeclaration()) {
         if (path.node.source.value === 'umi-plugin-react/locale') {
@@ -41,7 +41,33 @@ const genAst = (ast, localeMap) => {
       if (path.isIdentifier({ name: 'formatMessage' })) {
         const { arguments: formatMessageArguments } = path.container;
         if (!formatMessageArguments) {
-          return;
+          // <ProLayout
+          //  footerRender={footerRender}
+          //  menuDataRender={menuDataRender}
+          //  formatMessage={formatMessage}
+          // >
+          //   {children}
+          // </ProLayout>
+          if (path.parentPath.parentPath.type === 'JSXAttribute') {
+            path.parentPath.parentPath.remove();
+            return;
+          }
+
+          // title={getPageTitle({
+          //   pathname: location.pathname,
+          //   breadcrumb,
+          //   formatMessage,
+          //   ...props,
+          // })}
+          if (path.parentPath.type === 'ObjectProperty') {
+            if (path.parentPath.isRemove) {
+              return;
+            }
+            path.parentPath.remove();
+            // eslint-disable-next-line no-param-reassign
+            path.parentPath.isRemove = true;
+            return;
+          }
         }
         const params = {};
         formatMessageArguments.forEach(node => {
@@ -65,6 +91,8 @@ const genAst = (ast, localeMap) => {
           } else {
             container.replaceWith(t.identifier(message));
           }
+        } else {
+          container.remove();
         }
       }
 
