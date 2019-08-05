@@ -2,12 +2,13 @@ const glob = require('glob');
 const { join } = require('path');
 const fs = require('fs');
 const { winPath } = require('umi-utils');
-const getLocalFileList = require('./getLocalFileList');
-const removeLocale = require('./removeLocale');
-const eslintJs = require('./eslintJs');
 const prettier = require('prettier');
 const fabric = require('@umijs/fabric');
 const ora = require('ora');
+
+const getLocalFileList = require('./getLocalFileList');
+const removeLocale = require('./removeLocale');
+const eslintJs = require('./eslintJs');
 
 const spinner = ora();
 
@@ -32,20 +33,20 @@ module.exports = ({ cwd, locale = 'zh-CN', write }) => {
   spinner.start('🕵️‍  find js or ts files');
   const tsFiles = globList(['**/*.tsx', '**/*.ts', '**/*.js', '**/*.jsx'], {
     cwd,
-    ignore: ['**/*.d.ts', '**/locales/**', '**/node_modules/**'],
+    ignore: ['**/*.d.ts', '**/dist/**', '**/public/**', '**/locales/**', '**/node_modules/**'],
   });
   spinner.succeed();
 
-  spinner.start('🍻  load all locale file and build ts ');
+  spinner.start('📦  load all locale file and build ts ');
   // 获得 locale 的配置
   const localeMap = getLocalFileList(cwd, locale);
   spinner.succeed();
 
-  tsFiles.forEach((path, index) => {
-    spinner.start(`✂️  remove locale for ${path}. (${index + 1}/${tsFiles.length})`);
+  tsFiles.forEach(path => {
     const source = getFileContent(join(cwd, path));
     if (source.includes('formatMessage') || source.includes('FormattedMessage')) {
       let content = removeLocale(source, localeMap);
+      spinner.start(`✂️  remove locale for ${path}.`);
 
       if (write) {
         content = prettierCode(eslintJs(content), path);
@@ -53,8 +54,8 @@ module.exports = ({ cwd, locale = 'zh-CN', write }) => {
         spinner.succeed();
         return;
       }
+      spinner.succeed();
       console.log(content);
     }
-    spinner.succeed();
   });
 };

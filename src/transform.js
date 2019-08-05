@@ -4,7 +4,7 @@ module.exports = filePath => {
   const { code } = babel.transformFileSync(filePath, {
     presets: [
       [
-        require.resolve('@babel/preset-env'),
+        require.resolve('@babel/env'),
         {
           targets: {
             node: true,
