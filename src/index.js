@@ -41,6 +41,10 @@ module.exports = ({ cwd, locale = 'zh-CN', write }) => {
   // 获得 locale 的配置
   const localeMap = getLocalFileList(cwd, locale);
   spinner.succeed();
+  if (!tsFiles || tsFiles.length < 1) {
+    console.log('🎊 No files found');
+    return;
+  }
 
   tsFiles.forEach(path => {
     const source = getFileContent(join(cwd, path));
