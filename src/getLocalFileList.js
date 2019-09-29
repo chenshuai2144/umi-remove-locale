@@ -60,5 +60,5 @@ module.exports = (cwd, locale) => {
       }),
       {},
     );
-  return localeMap;
+  return localeMap || {};
 };

@@ -11,7 +11,7 @@ function generateCode(ast) {
   return generate.default(ast, {}).code;
 }
 
-const genMessage = ({ id, defaultMessage, values }, localeMap) => {
+const genMessage = ({ id, defaultMessage, values }, localeMap = {}) => {
   if (id && localeMap[id]) {
     const message = localeMap[id];
     if (values) {
