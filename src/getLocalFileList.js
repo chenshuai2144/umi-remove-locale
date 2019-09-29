@@ -45,9 +45,12 @@ module.exports = (cwd, locale) => {
     absSrcPath = join(cwd, 'src');
     absPagesPath = join(cwd, 'src/pages');
   }
-  const arrayList = getLocaleFileList(absSrcPath, absPagesPath)[locale].map(({ path }) =>
-    winPath(path),
-  );
+  const localeFileObj = getLocaleFileList(absSrcPath, absPagesPath)[locale];
+  if (!localeFileObj || localeFileObj.length < 1) {
+    console.log('🎊 No files found');
+    return;
+  }
+  const arrayList = localeFileObj.map(({ path }) => winPath(path));
   const localeMap = arrayList
     .map(filePath => tsImport(filePath))
     .reduce(
