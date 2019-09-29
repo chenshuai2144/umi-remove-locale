@@ -10,7 +10,7 @@ function getLocaleFileList(absSrcPath, absPagesPath, singular) {
   const localeFolder = singular ? 'locale' : 'locales';
 
   const localeFiles = glob
-    .sync('*.{ts,js}', {
+    .sync('**.{ts,js}', {
       cwd: winPath(join(absSrcPath, localeFolder)),
     })
     .map(name => {
